@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container ">
+    <div class="row ">
+
+        <div class="col-sm-8">
+            {% for post in posts.items %}
+            <div class="single-post-home">
+                <h5>
+                    <a class="custom-link" href="{{ url_for('post_detail', post_slug=post.slug) }}">
+                        {{ post.title }}
+                    </a>
+                </h5>
+                <p class="p-small-two text-muted">Posted {{ post.created_at.strftime('%d.%m.%Y') }} Author
+                    {{post.author.username }}
+                </p>
+
+                {% if post.description %}
+                <p class="p-small-one text-muted mb-0">
+                    {{ post.description }}
+                    <a class="read-more myFloat_Right" href="{{ url_for('post_detail', post_slug=post.slug) }}">Leggi
+                        articolo.</a>
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pagination-block">
+                <a class="btn btn-info mb-4" href="{{ url_for('homepage', page=1) }}">First</a>
+
+                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                {% if posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('homepage', page=page_num) }}">{{ page_num }}</a>
+                {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('homepage', page=page_num) }}">{{ page_num }}</a>
+                {% endif %}
+                {% else %}
+                ...
+                {% endif %}
+                {% endfor %}
+
+                <a class="btn btn-info mb-4" href="{{ url_for('homepage', page=posts.pages) }}">Last</a>
+            </div>
+
+        </div>
+        <div class="col-sm-4">
+            <div class="greyCol">
+                {% include 'about_me_snippet.html' %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

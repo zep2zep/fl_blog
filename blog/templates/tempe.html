@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Meteo{% endblock %}
+
+{% block content %}
+<div class="container content-container mt-3">
+    <section class="section">
+        <table style="width: 80%;">
+            <tbody>
+                <tr>
+                    <td style="text-align: right;">
+                        <h2>City : </h2>
+                    </td>
+                    <td style="padding-left: 10px;">
+                        <h2> {{ weather_data.city.upper() }} {{ weather_data.country }}</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;"><img
+                            src="http://openweathermap.org/img/wn/{{ weather_data.icon }}@2x.png" alt="Image"></td>
+                    <td style="padding-left: 10px;">
+                        <h2> {{ weather_data.temperature }}° C <h3>{{ weather_data.description }}</h3>
+                        </h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Longitudine :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.lon }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Latitudine :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.lat }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Pressione :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.pressure }} mbar</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Umidità :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.humidity }}%</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Vento velocità :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.speed }}Km/h</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Alba :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.sunrise }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Tramonto :</td>
+                    <td style="padding-left: 10px;"> {{ weather_data.sunset }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock content %}

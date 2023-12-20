@@ -1,0 +1,355 @@
+python -m venv venv
+venv\Scripts\activate
+
+↓↓↓↓↓↓ venv attivo
+(venv) D:\udemy\fl_blog>
+pip install Flask==2.0.3 
+python -m pip install --upgrade pip
+pip freeze > requirements.txt
+
+create dir blog
+
+blog\__init__.py
+    \routes.py
+
+run.py
+  
+set FLASK_APP=run.py
+set FLASK_ENV=develoment
+set FLASK_DEBUG=1
+flask run
+
+
+D:\udemy\fl_blog>flask run --host=192.168.1.128
+
+pip install python-dotenv --
+
+.flaskenv
+        FLASK_APP=run.py
+        FLASK_ENV=develoment
+        FLASK_DEBUG=1
+
+#Lezione 11       
+pip install flask-sqlalchemy
+pip install flask-migrate
+
+↓↓↓↓↓↓ venv attivo
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt
+
+pip freeze | grep -i flask-sqlalchemy >> requirements.txt
+pip freeze | grep -i flask-migrate >> requirements.txt
+
+
+pip freeze > requirements.txt
+############################pip Ignoring invalid distribution -ffi
+      delet c:\users\zep2018\appdata\local\programs\python\python36\lib\site-packages\-ffi tutte
+
+
+__init__.py
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+models.py
+config.py
+
+(venv) D:\udemy\fl_blog>flask db init
+(venv) D:\udemy\fl_blog>flask db migrate -m "Creazione tabelle Post e User"
+(venv) D:\udemy\fl_blog>flask db upgrade       
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> c9543c4467a8, Creazione tabelle Post e User
+
+
+https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
+Uscire da shell
+Ctrl + Z + Enter
+Clear terminal and python shell 
+Ctrl + P
+
+(venv) D:\udemy\fl_blog>flask shell
+>>> from blog import db
+>>> from blog.models import Post, User
+>>> u = User(username="test", email="test@user.com", password="modificami")
+>>> db.session.add(u)
+>>> db.session.commit()
+>>> p = Post(title="primo post", body="testo randomizzato", author=u)
+>>> db.session.add(p)
+>>> db.session.commit()
+>>> Post.query.all()
+[<Post 1>]
+>>> User.query.all()
+[<User 1>]
+>>> u = User.query.get(1)
+>>> u
+<User 1>
+>>> u.username
+'test'
+>>> u.email
+'test@user.com'
+>>> p = Post(title="secondo post", body="secondo post... body", athor=u)
+>>> db.session.add(u)
+>>> db.session.commit()
+>>> Post.query.all()
+[<Post 1>, <Post 2>]
+>>> post_queryset = Post.query.all()
+>>> post_queryset
+[<Post 1>, <Post 2>]
+
+run.py
+      @app.shell_context_processor
+model.py
+       def .....
+
+(venv) D:\udemy\fl_blog>flask shell
+senza importare db Post User
+>>> Post.query.all()
+[Post('1', 'primo post'), Post('2', 'secondo post')]
+>>> User.query.all()
+[User('1', 'test', 'test@user.com')]
+>>> Post.query.first()
+Post('1', 'primo post')
+>>> Post.query.filter(User.username=="test").all()
+[Post('1', 'primo post'), Post('2', 'secondo post')]
+>>> Post.query.filter(User.username=="test", User.id==1).all()
+[Post('1', 'primo post'), Post('2', 'secondo post')]
+>>> User.query.filter_by(username="test").all()
+[User('1', 'test', 'test@user.com')]
+>>> User.query.filter(User.username=="test").all()
+[User('1', 'test', 'test@user.com')]
+>>> p = Post.query.first()
+>>> p
+Post('1', 'primo post')
+>>> p.title = "primo post -- aggiornato"
+>>> db.session.commit()
+>>> p
+Post('1', 'primo post -- aggiornato')
+>>>
+>>> p = Post.query.get(2)
+>>> p
+Post('2', 'secondo post')
+>>> db.session.delete(p)
+>>> db.session.commit()
+>>> Post.query.all()
+[Post('1', 'primo post -- aggiornato')]
+>>>
+
+model.py
+       def set_password
+       def check_password
+
+>>> u = User.query.first()
+>>> u
+User('1', 'test', 'test@user.com')
+>>> u.password
+'modificami'
+>>> u.set_password_hash(u.password)
+>>> u.password
+'pbkdf2:sha256:260000$WOxF1CUdKc0mRH5y$f06a712179234b9e635845d49fc2b22b055a7fd7fd15b408d32830ed9b726dc4'
+>>> u.check_password('modificami')
+True
+>>> u.check_password('modificami2')
+False
+>>> db.session.commit()
+>>> User.query.first().password
+'pbkdf2:sha256:260000$WOxF1CUdKc0mRH5y$f06a712179234b9e635845d49fc2b22b055a7fd7fd15b408d32830ed9b726dc4'
+>>> u = User.query.first()
+>>> u
+>>> p1 = Post(title="What is Lorem Ipsum?", body="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen
+book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus
+PageMaker including versions of Lorem Ipsum.", author=u)
+>>> db.session.add(p1)
+>>> db.session.commit()
+>>> Post.query.all()
+[Post('1', 'primo post -- aggiornato'), Post('2', 'What is Lorem Ipsum?')]
+>>> p2 = Post(title="Where does it come from?", body="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen
+book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus
+PageMaker including versions of Lorem Ipsum.", author=u)
+>>> db.session.add(p2)
+>>> db.session.commit()
+>>> Post.query.all()
+[Post('1', 'primo post -- aggiornato'), Post('2', 'What is Lorem Ipsum?')]
+
+16. Autenticazione Utenti: Login e Logout
+(venv) D:\udemy\fl_blog>pip install flask-login
+(venv) D:\udemy\fl_blog>pip install flask-wtf
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt
+config.py
+       SECRET_KEY = os.environ.get('SECRET_KEY')
+
+
+>>> import uuid
+>>> print(uuid.uuid4().hex)
+ea47ad5de24d44209d925fae0c501659
+>>> print(uuid.uuid4().hex)
+4e3dd9ccbdd446a9b146bd1de582dc0c
+>>> print(uuid.uuid4().hex)
+9f4a60691da84342ac169a7343b37ee1
+>>> print(uuid.uuid4().hex)
+31071956e79b4560b9aea604d02ce229
+
+.env
+     SECRET_KEY=31071956e79b4560b9aea604d02ce229
+
+blog 
+    form.py
+
+templates 
+    login.html 
+     
+
+>>> u = User(username="admin", email="admin@localhos.com")
+>>> u.set_password_hash("admin")
+>>> u.set_password_hash("admin")
+>>> u.password
+'pbkdf2:sha256:260000$LfZmsRX3MQHcXB1K$a6bcf394540b8c14a0cb7cb15da10ec4d0e9432d0612fc35d4c9b76d089ec762'
+>>> db.session.add(u)
+>>> db.session.commit()
+
+
+templates 
+         register.html
+         forms.py
+                 class RegistrationForm
+ (venv) D:\udemy\fl_blog>pip install email_validator   
+ (venv) D:\udemy\fl_blog>pip freeze > requirements.txt             
+
+(venv) D:\udemy\fl_blog>pip install flask_bcrypt   
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt 
+
+@app.route("/")
+def homepage():
+    posts = (db.session.query(
+             Post.id,
+             Post.user_id,
+             Post.created_at,
+             Post.title,
+             Post.description,
+             Post.body,
+             User.username
+             )
+             .join(User, Post.user_id == User.id)
+             .order_by(Post.created_at.desc())
+             ).all()
+    return render_template("homepage.html", posts=posts)
+
+#laezione 18 flask-blog-09
+(venv) D:\udemy\fl_blog>pip install flask_misaka
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt  
+__init__
+         from flask_misaka import Misaka
+         Misaka(app)---agginge supporto markdown
+
+post_detail.html
+         <p>{{ post.body|markdown }}</p>
+
+#Lezion 21
+flask-blog-12_Implementazione_Campo_SLUG     
+blog
+    utils.py
+models.py      
+         class Post(db.Model):
+         ...
+         slug = db.Column(db.String(250))
+
+(venv) D:\udemy\fl_blog>flask db migrate
+(venv) D:\udemy\fl_blog>flask db upgrade
+(venv) D:\udemy\fl_blog>flask shell
+>>> from blog.utils import title_slugifier
+>>> for post in Post.query.all():
+...     post.slug = title_slugifier(post.title)  Ctrl + Enter  indentazione
+...     db.session.commit()
+...
+...
+>>> for post in Post.query.all():
+...     post.slug
+...
+'primo-da-admin-hjos9x'
+'nuovo-post-con-flask-misaka-la2yss'
+>>>
+
+routes.py
+        from blog.utils import title_slugifier
+
+        def post_create():
+        ......
+         if form.validate_on_submit():
+        slug = title_slugifier(form.title.data)
+        new_post = Post(title=form.title.data, body=form.body.data, slug=slug,
+                        description=form.description.data, author=current_user)
+        
+        @app.route("/posts/<string:post_slug>")
+        def post_detail(post_slug):
+        post_instance = Post.query.filter_by(slug=post_slug).first_or_404()
+        return render_template("post_detail.html", post=post_instance)
+
+        @app.route("/posts/<int:post_id>/update", methods=["GET", "POST"])
+        @login_required
+        .....
+        return redirect(url_for('post_detail', post_slug=post_instance.slug))
+
+homepage.html
+     <a class="custom-link" href="{{ url_for('post_detail', post_slug=post.slug) }}">
+
+
+#Lezion 22
+flask-blog-13_Upload_Immagini
+
+models.py      
+         class Post(db.Model):
+         ...
+         image = db.Column(db.String(120))
+routes.py
+        def homepage():
+        ....
+        Post.img
+        .....
+(venv) D:\udemy\fl_blog>flask db migrate
+(venv) D:\udemy\fl_blog>flask db upgrade
+config.py 
+         UPLOAD_FOLDER = "static/img/posts"
+
+static
+      img
+      post
+
+(venv) D:\udemy\fl_blog>pip install pillow
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt 
+utils.py
+        import os
+        from blog import app
+        UPLOAD_FOLDER = app.config['UPLOAD_FOLDER']
+        def save_picture(form_data): 
+
+
+form.py
+      
+      from flask_wtf.file import FileField, FileAllowed
+       
+       class  Postform()
+       image = FileField('Copertina Articolo', 
+        validators=[FileAllowed(['jpg', 'jpeg', 'png'])])
+
+(venv) D:\udemy\fl_blog>flask db init
+(venv) D:\udemy\fl_blog>flask db migrate -m "Creazione tabelle Post e User"
+(venv) D:\udemy\fl_blog>flask db upgrade
+
+
+(venv) D:\udemy\fl_blog>pip install flask_misaka
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt  
+
+
+
+(venv) D:\udemy\fl_blog>flask db init
+(venv) D:\udemy\fl_blog>flask db migrate -m "Modifica id tabelle Post e User"
+(venv) D:\udemy\fl_blog>flask db upgrade
+
+#### Meteo 
+(venv) D:\udemy\fl_blog>pip install requests
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt 
+
+
+#####Contact
+(venv) D:\udemy\fl_blog>pip install flask_mail
+(venv) D:\udemy\fl_blog>pip freeze > requirements.txt 
