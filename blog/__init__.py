@@ -33,3 +33,7 @@ with app.app_context():
         migrate.init_app(app, db)
 
 from blog import models, routes
+
+if __name__ == "__main__":
+    db.create_all()
+    app.run()
