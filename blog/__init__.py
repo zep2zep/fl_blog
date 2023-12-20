@@ -19,15 +19,15 @@ login_manager = LoginManager(app)
 bcrypt = Bcrypt(app)
 
 Misaka(app)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = 'aoxoeoxoa@gmail.com'
-app.config['MAIL_PASSWORD'] = 'xeoanusvderkfxfl'
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_TLS"] = False
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "aoxoeoxoa@gmail.com"
+app.config["MAIL_PASSWORD"] = "xeoanusvderkfxfl"
 mail = Mail(app)
 with app.app_context():
-    if db.engine.url.drivername == 'sqlite':
+    if db.engine.url.drivername == "sqlite":
         migrate.init_app(app, db, render_as_batch=True)
     else:
         migrate.init_app(app, db)
