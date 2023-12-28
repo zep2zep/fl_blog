@@ -23,7 +23,10 @@
             <div class="col">
                 <nav class="navbar navbar-expand-lg mt-2 mb-4">
                     <div class="container navbar-container">
-                        <a class="navbar-brand" href="{{ url_for('homepage') }}">CodingWiz</a>
+                        <a class="navbar-brand ms-5" href="/">
+                            <img src="{{ url_for('static', filename='img/keky.png') }}" height="45" width="70" />
+                        </a>
+                        <a class="navbar-brand" href="{{ url_for('homepage') }}">Mini Blog</a>
                         <button class="navbar-toggler me-2" type="button" data-bs-toggle="collapse"
                             data-bs-target="#mynavbar">
                             <span class="navbar-toggler-icon "></span>

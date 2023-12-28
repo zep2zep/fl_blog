@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% block title %}Sing up - CodingWiz{% endblock %}
+{% block title %}Register{% endblock %}
 {% block content %}
-<div class="container text-center mt-4 col-md-4 well">
-    <h2>Admin Login</h2>
-    <div class="row no-gutters justify-content-center">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
             <legend class="border-bottom mb-4">Join Today</legend>
             <div class="form-group">
                 {{ form.username.label(class="form-control-label") }}
+
                 {% if form.username.errors %}
                 {{ form.username(class="form-control form-control-lg is-invalid") }}
                 <div class="invalid-feedback">
@@ -59,20 +59,15 @@
                 {{ form.confirm_password(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
-            <div class="form-group">
-                {{ form.submit(class="btn btn-outline-info") }}
-            </div>
-        </form>
-        <div class="border-top pt-3">
-            <small class="text-muted">
-                Already Have An Account? <a class="ml-2" href="{{ url_for('login') }}">Sign In</a>
-            </small>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
         </div>
-
-
-    </div>
-
-
-
+    </form>
+</div>
+<div class="border-top pt-3">
+    <small class="text-muted">
+        Already Have An Account? <a class="ml-2" href="{{ url_for('login') }}">Sign In</a>
+    </small>
 </div>
 {% endblock content %}

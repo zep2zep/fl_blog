@@ -3,10 +3,10 @@
 {% block title %}Login - CodingWiz{% endblock %}
 
 {% block content %}
-<div class="container  mt-4 col-md-4 well">
+<div class="container form-box mt-5 mx-auto" style="width: 600px;">
     <h2>Login</h2>
     <div class="row no-gutters justify-content-center ">
-        <form method="POST" novalidate>
+        <form action="/login" method="POST" novalidate>
             {{ form.hidden_tag() }}
             <!-- csrf_token -->
             <div class="form-group">

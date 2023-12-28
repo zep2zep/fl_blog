@@ -1,5 +1,6 @@
 import requests
 import datetime
+from sqlalchemy.exc import IntegrityError
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user, login_required
 
@@ -10,28 +11,67 @@ from blog.utils import save_picture, title_slugifier
 
 from flask_mail import Message
 
+from sqlalchemy.exc import IntegrityError
 
-@app.route("/")
+
+@app.route("/", methods=["GET"])
 def homepage():
     page_number = request.args.get("page", 1, type=int)
     posts = Post.query.order_by(Post.created_at.desc()).paginate(page_number, 5, True)
 
-    if posts.has_next:
-        next_page = url_for("homepage", page=posts.next_num)
-    else:
-        next_page = None
+    return render_template(
+        "homepage.html",
+        posts=posts,
+        weather_data=None,  # Non includiamo dati meteo per richieste GET
+    )
 
-    if posts.has_prev:
-        previous_page = url_for("homepage", page=posts.prev_num)
-    else:
-        previous_page = None
+
+@app.route("/", methods=["POST"])
+def handle_weather():
+    weather = {}
+    cityname = request.form["city"]
+    if cityname == "":
+        flash("Per favore inserire il nome di una città", "danger")
+        return redirect(url_for("homepage"))
+
+    url = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=271d1234d3f497eed5b1d80a07b3fcd1"
+    json_object = requests.get(url.format(cityname)).json()
+
+    # Estrai i dati meteo solo se la richiesta ha avuto successo
+    if (
+        json_object.get("main")
+        and json_object.get("weather")
+        and json_object.get("wind")
+        and json_object.get("coord")
+        and json_object.get("sys")
+    ):
+        weather = {
+            "city": cityname,
+            "temperature": json_object["main"]["temp"],
+            "pressure": json_object["main"]["pressure"],
+            "humidity": json_object["main"]["humidity"],
+            "speed": json_object["wind"]["speed"],
+            "description": json_object["weather"][0]["description"],
+            "icon": json_object["weather"][0]["icon"],
+            "lon": json_object["coord"]["lon"],
+            "lat": json_object["coord"]["lat"],
+            "country": json_object["sys"]["country"],
+            "sunrise": datetime.datetime.fromtimestamp(
+                json_object["sys"]["sunrise"]
+            ).strftime("%H:%M:%S"),
+            "sunset": datetime.datetime.fromtimestamp(
+                json_object["sys"]["sunset"]
+            ).strftime("%H:%M:%S"),
+        }
+    # Ottenere i post anche per la richiesta POST
+    page_number = request.args.get("page", 1, type=int)
+    posts = Post.query.order_by(Post.created_at.desc()).paginate(page_number, 5, True)
 
     return render_template(
         "homepage.html",
         posts=posts,
         current_page=page_number,
-        next_page=next_page,
-        previous_page=previous_page,
+        weather_data=weather,
     )
 
 
@@ -120,21 +160,30 @@ def about():
     return render_template("about_page.html")
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET"])
+def login_form():
+    if current_user.is_authenticated:
+        return redirect(url_for("homepage"))
+    form = LoginForm()
+    return render_template("login.html", form=form)
+
+
+@app.route("/login", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("homepage"))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not bcrypt.check_password_hash(
             user.password, form.password.data
         ):
-            flash("username e password non combaciano!")
-            return redirect(url_for("login"))
+            flash("Username e/o password non validi!")
+            return redirect(url_for("login_form"))
         login_user(user, remember=form.remember_me.data)
         return redirect(url_for("homepage"))
-    return render_template("login.html", form=form)
+    return redirect(url_for("login_form"))
 
 
 @app.route("/logout")
@@ -143,12 +192,30 @@ def logout():
     return redirect(url_for("homepage"))
 
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
+@app.route("/register", methods=["GET"])
+def register_form():
     if current_user.is_authenticated:
         return redirect(url_for("homepage"))
     form = RegistrationForm()
+    return render_template("register.html", title="Register", form=form)
+
+
+from sqlalchemy.exc import IntegrityError
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("homepage"))
+
+    form = RegistrationForm()
     if form.validate_on_submit():
+        existing_user = User.query.filter_by(username=form.username.data).first()
+
+        if existing_user is not None:
+            flash("Username already exists", "danger")
+            return render_template("register.html", title="Register", form=form)
+
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
             "utf-8"
         )
@@ -156,42 +223,17 @@ def register():
             username=form.username.data, email=form.email.data, password=hashed_password
         )
         db.session.add(user)
-        db.session.commit()
-        flash("Your account has been created! You are now able to log in", "success")
-        return redirect(url_for("login"))
+        try:
+            db.session.commit()
+            flash(
+                "Your account has been created! You are now able to log in", "success"
+            )
+            return redirect(url_for("login"))
+        except IntegrityError:
+            db.session.rollback()
+            flash("Error creating your account. Please try again.", "danger")
+            return render_template("register.html", title="Register", form=form)
     return render_template("register.html", title="Register", form=form)
-
-
-@app.route("/tempe", methods=["POST"])
-def tempe():
-    weather = []
-    if request.method == "POST":
-        cityname = request.form["city"]
-        if cityname == "":
-            flash("Per favore inserire il nome di una città", "danger")
-            return redirect(url_for("homepage"))
-        else:
-            url = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=271d1234d3f497eed5b1d80a07b3fcd1"
-        json_object = requests.get(url.format(cityname)).json()
-        weather = {
-            "city": cityname,
-            "temperature": json_object["main"]["temp"],
-            "pressure": json_object["main"]["pressure"],
-            "humidity": json_object["main"]["humidity"],
-            "speed": json_object["wind"]["speed"],
-            "description": json_object["weather"][0]["description"],
-            "icon": json_object["weather"][0]["icon"],
-            "lon": json_object["coord"]["lon"],
-            "lat": json_object["coord"]["lat"],
-            "country": json_object["sys"]["country"],
-            "sunrise": datetime.datetime.fromtimestamp(
-                json_object["sys"]["sunrise"]
-            ).strftime("%H:%M:%S"),
-            "sunset": datetime.datetime.fromtimestamp(
-                json_object["sys"]["sunset"]
-            ).strftime("%H:%M:%S"),
-        }
-    return render_template("tempe.html", weather_data=weather)
 
 
 @app.route("/contact", methods=["POST", "GET"])
